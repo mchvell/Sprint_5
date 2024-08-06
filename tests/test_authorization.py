@@ -1,83 +1,65 @@
-from time import sleep
-
-from framework.nav_bar import NavBar
-from framework.lk_auth_page import AuthPage
-from framework.profile_page import ProfilePage
-from framework.lk_reg_page import RegPage
-from framework.reset_password_page import ResetPasswordPage
-from framework.main_page import MainPage
+from framework.MainPage import MainPageHelper
+from framework.AuthPage import AuthPageHelper
+from framework.NavBar import NavBarHelper
+from framework.ProfilePage import ProfilePageHelper
+from framework.RegPage import RegPageHelper
 
 
-class TestAuthorization:
-    def test_enter_from_navbar(self, open_browser):
-        navbar = NavBar(open_browser)
-        navbar.switch_tab("lk")
+class TestAuth:
+    def test_auth_from_constructor_page(self, browser):
+        main_page = MainPageHelper(browser)
+        main_page.go_to_site()
+        main_page.click_on_enter_button()
 
-        user = AuthPage(open_browser)
-        user.get_authorization("gubanov12qa@yandex.ru","fRodoAndBilbo")
+        auth_page = AuthPageHelper(browser)
+        auth_page.fill_auth_form(email="gubanov12qa@yandex.ru", password="fRodoAndBilbo")
+        auth_page.click_enter_button()
 
-        navbar.switch_tab("lk")
-        profile_page = ProfilePage(open_browser)
-        text = profile_page.exit_button().text
-        assert text == "Выход"
+        nav_bar = NavBarHelper(browser)
+        nav_bar.switcher("lk")
+        assert "/account/profile" in browser.current_url
 
-    # глупый тест
-    def test_enter_from_reg_page(self, open_browser):
-        navbar = NavBar(open_browser)
-        navbar.switch_tab("lk")
-        # navbar.get_lk_locator().click()
+    def test_auth_from_auth_page(self, browser):
+        auth_page = AuthPageHelper(browser)
+        auth_page.go_to_site()
+        auth_page.fill_auth_form(email="gubanov12qa@yandex.ru", password="fRodoAndBilbo")
+        auth_page.click_enter_button()
 
-        user = AuthPage(open_browser)
-        user.get_registration_link().click()
+        nav_bar = NavBarHelper(browser)
+        nav_bar.switcher("lk")
+        assert "/account/profile" in browser.current_url
 
-        registration_page = RegPage(open_browser)
-        registration_page.get_enter_link().click()
+    def test_auth_from_nav_bar(self, browser):
+        main_page = MainPageHelper(browser)
+        main_page.go_to_site()
 
-        user = AuthPage(open_browser)
-        user.get_authorization("gubanov12qa@yandex.ru", "fRodoAndBilbo")
-        sleep(5)
+        nav_bar = NavBarHelper(browser)
+        nav_bar.switcher("lk")
+        assert "site/login" in browser.current_url
 
-        navbar.switch_tab("lk")
-        profile_page = ProfilePage(open_browser)
-        text = profile_page.exit_button().text
-        assert text == "Выход"
+        auth_page = AuthPageHelper(browser)
+        auth_page.fill_auth_form(email="gubanov12qa@yandex.ru", password="fRodoAndBilbo")
+        auth_page.click_enter_button()
 
-    # еще один глупый тест
-    def test_enter_from_reset_password_page(self, open_browser):
-        navbar = NavBar(open_browser)
-        navbar.switch_tab("lk")
+        nav_bar.switcher("lk")
 
-        user = AuthPage(open_browser)
-        user.get_reset_password_link().click()
+        profile = ProfilePageHelper(browser)
+        exit_button_text = profile.get_text_on_exit_button()
+        assert exit_button_text == "Выход"
+       
+    def test_auth_from_reg_page(self, browser):
+        reg_page = RegPageHelper(browser)
+        reg_page.go_to_site()
+        reg_page.click_on_auth_link()
+        assert "site/login" in browser.current_url
 
-        reset_password_page = ResetPasswordPage(open_browser)
-        reset_password_page.get_enter_link().click()
+        auth_page = AuthPageHelper(browser)
+        auth_page.fill_auth_form(email="gubanov12qa@yandex.ru", password="fRodoAndBilbo")
+        auth_page.click_enter_button()
 
-        user.get_authorization("gubanov12qa@yandex.ru", "fRodoAndBilbo")
+        nav_bar = NavBarHelper(browser)
+        nav_bar.switcher("lk")
 
-        navbar.switch_tab("lk")
-        profile_page = ProfilePage(open_browser)
-        text = profile_page.exit_button().text
-        assert text == "Выход"
-
-    def test_enter_from_main_page(self, open_browser):
-        navbar = NavBar(open_browser)
-        navbar.switch_tab("logo")
-
-        main_page = MainPage(open_browser)
-        main_page.enter_button().click()
-
-        user = AuthPage(open_browser)
-        user.get_authorization("gubanov12qa@yandex.ru", "fRodoAndBilbo")
-        sleep(5)
-
-        navbar.switch_tab("lk")
-        profile_page = ProfilePage(open_browser)
-        text = profile_page.exit_button().text
-        assert text == "Выход"
-
-
-
-
-
-
+        profile = ProfilePageHelper(browser)
+        exit_button_text = profile.get_text_on_exit_button()
+        assert exit_button_text == "Выход"

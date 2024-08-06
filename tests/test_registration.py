@@ -1,47 +1,38 @@
-import pytest
-
-from framework.nav_bar import NavBar
-from framework.lk_auth_page import AuthPage
-from framework.lk_reg_page import RegPage
+from framework.RegPage import RegPageHelper, RegLocators
 
 
-@pytest.fixture(scope="function")
-def open_registration_page(open_browser):
-    navbar = NavBar(open_browser)
-    navbar.get_lk_locator().click()
+class TestRegistration:
+    def test_registration_form_name(self, browser):
+        reg_page = RegPageHelper(browser)
+        reg_page.go_to_site()
 
-    auth_page = AuthPage(open_browser)
-    auth_page.get_registration_link().click()
+        reg_page.fill_reg_form(name="Антуан")
+        name_input = reg_page.get_input_value("name")
 
+        assert name_input == "Антуан"
 
-class TestRegistrationForm:
-    def test_registration_form_name(self, open_registration_page, open_browser):
-        registration_page = RegPage(open_browser)
-        registration_page.fill_the_form("Антуан","mchvell@tf.ru","ForD1*")
+    def test_registration_form_email(self, browser):
+        reg_page = RegPageHelper(browser)
+        reg_page.go_to_site()
 
-        name = registration_page.get_attribute_value(registration_page.get_name_input(), "value")
-        assert name == "Антуан"
+        reg_page.fill_reg_form(email="exupirie@qa.com")
+        email_input = reg_page.get_input_value("email")
 
-    def test_registration_form_email(self, open_registration_page, open_browser):
-        registration_page = RegPage(open_browser)
-        registration_page.fill_the_form("Антуан", "mchvell@tf.ru", "ForD1*")
+        assert "@" in email_input and "." in email_input
 
-        email = registration_page.get_attribute_value(registration_page.get_email_input(), "value")
-        assert "@" in email and "." in email
+    def test_registration_form_password_length(self, browser):
+        reg_page = RegPageHelper(browser)
+        reg_page.go_to_site()
 
-    def test_registration_form_password_lenght(self, open_registration_page, open_browser):
-        registration_page = RegPage(open_browser)
-        registration_page.fill_the_form("Антуан", "mchvell@tf.ru", "ForD1*")
+        reg_page.fill_reg_form(password="ForD1*")
+        length_password = len(reg_page.get_input_value("password"))
+        assert length_password >= 6
 
-        password = registration_page.get_attribute_value(registration_page.get_password_input(), "value")
-        assert len(password) >= 6
+    def test_registration_form_incorrect_pass(self, browser):
+        reg_page = RegPageHelper(browser)
+        reg_page.go_to_site()
 
-    def test_registration_form_incorrect_pass(self, open_registration_page, open_browser):
-
-        registration_page = RegPage(open_browser)
-        registration_page.fill_the_form("Гэб", "sport@tf.ru", "100")
-        registration_page.get_name_input().click()
-
-        incorrect_password = registration_page.get_incorrect_password().text
-
+        reg_page.fill_reg_form(password="Fo")
+        reg_page.click_on_input("name")
+        incorrect_password = reg_page.get_incorrect_password_text()
         assert incorrect_password == "Некорректный пароль"
